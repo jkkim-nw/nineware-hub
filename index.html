@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nineware Dashboard</title>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --bg2: #111118;
+      --bg3: #1a1a24;
+      --border: rgba(255,255,255,0.07);
+      --border-hover: rgba(255,255,255,0.15);
+      --text-primary: #f0f0f5;
+      --text-secondary: #8888a0;
+      --text-muted: #44445a;
+      --accent: #6c63ff;
+      --accent2: #a78bfa;
+      --accent-glow: rgba(108,99,255,0.15);
+      --green: #10b981;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --blue: #3b82f6;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* 배경 그라디언트 오브 */
+    .bg-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .bg-orb-1 {
+      width: 600px; height: 600px;
+      background: rgba(108,99,255,0.08);
+      top: -200px; left: -100px;
+    }
+    .bg-orb-2 {
+      width: 400px; height: 400px;
+      background: rgba(16,185,129,0.05);
+      bottom: 100px; right: -100px;
+    }
+
+    /* 레이아웃 */
+    .layout {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: 100vh;
+    }
+
+    /* 사이드바 */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0;
+      width: 220px;
+      height: 100vh;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 28px 0;
+      z-index: 100;
+    }
+
+    .logo-wrap {
+      padding: 0 24px 28px;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+    .logo span { color: var(--accent2); }
+    .logo-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .nav {
+      padding: 20px 12px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .nav-section-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 10px 12px 6px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 400;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      text-decoration: none;
+    }
+    .nav-item:hover {
+      background: var(--bg3);
+      color: var(--text-primary);
+    }
+    .nav-item.active {
+      background: var(--accent-glow);
+      color: var(--accent2);
+      border: 1px solid rgba(108,99,255,0.2);
+    }
+    .nav-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .dot-gray { background: var(--text-muted); }
+    .dot-accent { background: var(--accent2); box-shadow: 0 0 6px var(--accent2); }
+    .nav-badge {
+      margin-left: auto;
+      font-size: 10px;
+      background: var(--bg3);
+      color: var(--text-muted);
+      padding: 2px 6px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+    }
+    .nav-badge.new {
+      background: rgba(108,99,255,0.15);
+      color: var(--accent2);
+      border-color: rgba(108,99,255,0.2);
+    }
+
+    .sidebar-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+    }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+    .user-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+    .user-role { font-size: 11px; color: var(--text-muted); }
+
+    /* 메인 콘텐츠 */
+    .main {
+      margin-left: 220px;
+      padding: 32px 36px;
+      min-height: 100vh;
+    }
+
+    /* 헤더 */
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+    .page-title {
+      font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+    .page-sub {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+    .header-time {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: right;
+      margin-top: 4px;
+    }
+
+    /* 상태 바 */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 16px;
+      margin-bottom: 28px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .status-divider { width: 1px; height: 12px; background: var(--border); margin: 0 4px; }
+
+    /* 대시보드 그리드 */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .dash-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+      display: block;
+    }
+    .dash-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .dash-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+      background: var(--bg3);
+    }
+    .dash-card:hover::before { opacity: 1; }
+    .dash-card.active-card { border-color: rgba(108,99,255,0.3); background: var(--bg3); }
+    .dash-card.active-card::before { opacity: 1; }
+
+    .card-accent-purple::before { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+    .card-accent-green::before { background: linear-gradient(90deg, var(--green), #34d399); }
+    .card-accent-amber::before { background: linear-gradient(90deg, var(--amber), #fcd34d); }
+    .card-accent-blue::before { background: linear-gradient(90deg, var(--blue), #60a5fa); }
+    .card-accent-red::before { background: linear-gradient(90deg, var(--red), #f87171); }
+
+    .card-header-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .card-icon {
+      width: 36px; height: 36px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    .icon-purple { background: rgba(108,99,255,0.15); }
+    .icon-green { background: rgba(16,185,129,0.12); }
+    .icon-amber { background: rgba(245,158,11,0.12); }
+    .icon-blue { background: rgba(59,130,246,0.12); }
+    .icon-red { background: rgba(239,68,68,0.12); }
+
+    .card-status {
+      font-size: 10px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: 99px;
+      letter-spacing: 0.03em;
+    }
+    .status-live { background: rgba(16,185,129,0.12); color: var(--green); border: 1px solid rgba(16,185,129,0.2); }
+    .status-soon { background: rgba(245,158,11,0.1); color: var(--amber); border: 1px solid rgba(245,158,11,0.2); }
+    .status-prep { background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid var(--border); }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    }
+    .card-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+    .card-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .card-owner {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .owner-dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+    .card-arrow {
+      font-size: 14px;
+      color: var(--text-muted);
+      transition: transform 0.15s, color 0.15s;
+    }
+    .dash-card:hover .card-arrow { transform: translateX(3px); color: var(--accent2); }
+
+    /* 하단 섹션 */
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .section-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+    }
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    }
+    .section-title-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent2);
+    }
+
+    /* AI 활용 피드 */
+    .feed-item {
+      display: flex;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .feed-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .feed-avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .feed-content { flex: 1; }
+    .feed-name { font-size: 12px; font-weight: 500; color: var(--text-primary); }
+    .feed-text { font-size: 12px; color: var(--text-secondary); margin-top: 2px; line-height: 1.4; }
+    .feed-time { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+    .feed-tag {
+      display: inline-block;
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-top: 4px;
+      background: rgba(108,99,255,0.1);
+      color: var(--accent2);
+      border: 1px solid rgba(108,99,255,0.15);
+    }
+
+    /* 공지사항 */
+    .notice-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .notice-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .notice-icon {
+      width: 28px; height: 28px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+      background: var(--bg3);
+    }
+    .notice-title { font-size: 12px; font-weight: 500; color: var(--text-primary); }
+    .notice-date { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .notice-new {
+      margin-left: 6px;
+      font-size: 9px;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: rgba(108,99,255,0.15);
+      color: var(--accent2);
+      font-weight: 600;
+    }
+
+    /* 애니메이션 */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(12px);
+      animation: fadeIn 0.4s ease forwards;
+    }
+    @keyframes fadeIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in:nth-child(1) { animation-delay: 0.05s; }
+    .fade-in:nth-child(2) { animation-delay: 0.1s; }
+    .fade-in:nth-child(3) { animation-delay: 0.15s; }
+    .fade-in:nth-child(4) { animation-delay: 0.2s; }
+    .fade-in:nth-child(5) { animation-delay: 0.25s; }
+    .fade-in:nth-child(6) { animation-delay: 0.3s; }
+  </style>
+</head>
+<body>
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+
+  <div class="layout">
+    <!-- 사이드바 -->
+    <aside class="sidebar">
+      <div class="logo-wrap">
+        <div class="logo">nine<span>ware</span></div>
+        <div class="logo-sub">Team Dashboard</div>
+      </div>
+      <nav class="nav">
+        <div class="nav-section-label">메인</div>
+        <a class="nav-item active" href="#">
+          <span class="nav-dot dot-accent"></span>
+          홈 대시보드
+        </a>
+
+        <div class="nav-section-label" style="margin-top:8px;">데이터 현황</div>
+        <a class="nav-item" href="https://sales-volume-ten.vercel.app" target="_blank">
+          <span class="nav-dot dot-green"></span>
+          매출/판매 현황
+          <span class="nav-badge" style="background:rgba(16,185,129,0.1);color:var(--green);border-color:rgba(16,185,129,0.2);">Live</span>
+        </a>
+        <a class="nav-item" href="#">
+          <span class="nav-dot dot-gray"></span>
+          광고 데이터
+          <span class="nav-badge">준비중</span>
+        </a>
+        <a class="nav-item" href="#">
+          <span class="nav-dot dot-gray"></span>
+          ERP 현황
+          <span class="nav-badge">준비중</span>
+        </a>
+        <a class="nav-item" href="#">
+          <span class="nav-dot dot-gray"></span>
+          이지어드민
+          <span class="nav-badge">준비중</span>
+        </a>
+
+        <div class="nav-section-label" style="margin-top:8px;">팀</div>
+        <a class="nav-item" href="#">
+          <span class="nav-dot dot-gray"></span>
+          AI 활용 공유
+          <span class="nav-badge new">New</span>
+        </a>
+        <a class="nav-item" href="#">
+          <span class="nav-dot dot-gray"></span>
+          공지사항
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="avatar">NW</div>
+          <div>
+            <div class="user-name">나인웨어</div>
+            <div class="user-role">팀 관리자</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 메인 -->
+    <main class="main">
+      <div class="page-header fade-in">
+        <div>
+          <div class="page-title">팀 대시보드</div>
+          <div class="page-sub">각 담당자의 데이터 현황과 AI 활용 내용을 확인하세요.</div>
+        </div>
+        <div class="header-time" id="clock"></div>
+      </div>
+
+      <div class="status-bar fade-in">
+        <div class="status-dot"></div>
+        <span>시스템 정상 운영 중</span>
+        <div class="status-divider"></div>
+        <span>활성 대시보드 1개</span>
+        <div class="status-divider"></div>
+        <span>팀원 10명</span>
+        <div class="status-divider"></div>
+        <span id="today-date"></span>
+      </div>
+
+      <!-- 대시보드 카드 그리드 -->
+      <div class="dashboard-grid">
+        <a class="dash-card card-accent-green active-card fade-in" href="https://sales-volume-ten.vercel.app" target="_blank">
+          <div class="card-header-row">
+            <div class="card-icon icon-green">📊</div>
+            <span class="card-status status-live">● Live</span>
+          </div>
+          <div class="card-title">매출 / 판매 현황</div>
+          <div class="card-desc">이지어드민 기반 판매량, TOP 20 제품, 요일별 평균 판매량 분석</div>
+          <div class="card-meta">
+            <div class="card-owner">
+              <div class="owner-dot">김</div>
+              <span>김XX 담당</span>
+            </div>
+            <span class="card-arrow">→</span>
+          </div>
+        </a>
+
+        <div class="dash-card card-accent-amber fade-in" style="cursor:default;">
+          <div class="card-header-row">
+            <div class="card-icon icon-amber">📣</div>
+            <span class="card-status status-soon">준비중</span>
+          </div>
+          <div class="card-title">광고 데이터</div>
+          <div class="card-desc">Google Ads, Meta, 네이버 광고 성과 통합 현황</div>
+          <div class="card-meta">
+            <div class="card-owner">
+              <div class="owner-dot">광</div>
+              <span>광고팀 담당</span>
+            </div>
+            <span class="card-arrow" style="opacity:0.3;">→</span>
+          </div>
+        </div>
+
+        <div class="dash-card card-accent-blue fade-in" style="cursor:default;">
+          <div class="card-header-row">
+            <div class="card-icon icon-blue">🏭</div>
+            <span class="card-status status-prep">준비중</span>
+          </div>
+          <div class="card-title">ERP 현황</div>
+          <div class="card-desc">재고, 발주, 입출고 데이터 현황판</div>
+          <div class="card-meta">
+            <div class="card-owner">
+              <div class="owner-dot">ERP</div>
+              <span>담당자</span>
+            </div>
+            <span class="card-arrow" style="opacity:0.3;">→</span>
+          </div>
+        </div>
+
+        <div class="dash-card card-accent-purple fade-in" style="cursor:default;">
+          <div class="card-header-row">
+            <div class="card-icon icon-purple">🗂️</div>
+            <span class="card-status status-prep">준비중</span>
+          </div>
+          <div class="card-title">이지어드민</div>
+          <div class="card-desc">주문, 배송, CS 현황 통합 뷰</div>
+          <div class="card-meta">
+            <div class="card-owner">
+              <div class="owner-dot">어</div>
+              <span>담당자</span>
+            </div>
+            <span class="card-arrow" style="opacity:0.3;">→</span>
+          </div>
+        </div>
+
+        <div class="dash-card card-accent-red fade-in" style="cursor:default;">
+          <div class="card-header-row">
+            <div class="card-icon icon-red">🤖</div>
+            <span class="card-status status-prep">준비중</span>
+          </div>
+          <div class="card-title">AI 활용 공유</div>
+          <div class="card-desc">팀원들의 Claude 활용 사례, 프롬프트, 인사이트 공유</div>
+          <div class="card-meta">
+            <div class="card-owner">
+              <div class="owner-dot">팀</div>
+              <span>전체</span>
+            </div>
+            <span class="card-arrow" style="opacity:0.3;">→</span>
+          </div>
+        </div>
+
+        <div class="dash-card card-accent-purple fade-in" style="cursor:default; border-style: dashed; opacity: 0.5;">
+          <div class="card-header-row">
+            <div class="card-icon" style="background:var(--bg3); font-size:20px;">+</div>
+            <span class="card-status status-prep">추가 예정</span>
+          </div>
+          <div class="card-title">새 대시보드</div>
+          <div class="card-desc">담당자가 Claude로 만들면 여기에 추가됩니다.</div>
+          <div class="card-meta">
+            <span style="font-size:11px; color:var(--text-muted);">슬롯 비어있음</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 하단 -->
+      <div class="bottom-grid">
+        <!-- AI 활용 피드 -->
+        <div class="section-card fade-in">
+          <div class="section-title">
+            <div class="section-title-dot"></div>
+            팀 AI 활용 피드
+          </div>
+          <div class="feed-item">
+            <div class="feed-avatar" style="background:rgba(108,99,255,0.15);color:var(--accent2);">김</div>
+            <div class="feed-content">
+              <div class="feed-name">김XX</div>
+              <div class="feed-text">판매 대시보드 Claude로 완성. 요일별 판매량 패턴 발견!</div>
+              <div class="feed-time">오늘 18:30</div>
+              <div class="feed-tag">매출분석</div>
+            </div>
+          </div>
+          <div class="feed-item">
+            <div class="feed-avatar" style="background:rgba(16,185,129,0.12);color:var(--green);">이</div>
+            <div class="feed-content">
+              <div class="feed-name">이XX</div>
+              <div class="feed-text">Claude로 광고 리포트 자동 요약 프롬프트 만들었어요. 공유 예정</div>
+              <div class="feed-time">오늘 15:12</div>
+              <div class="feed-tag">광고</div>
+            </div>
+          </div>
+          <div class="feed-item">
+            <div class="feed-avatar" style="background:rgba(245,158,11,0.1);color:var(--amber);">박</div>
+            <div class="feed-content">
+              <div class="feed-name">박XX</div>
+              <div class="feed-text">ERP 데이터 정리에 Claude 써봤는데 엑셀 변환이 훨씬 빠르네요</div>
+              <div class="feed-time">어제 11:45</div>
+              <div class="feed-tag">ERP</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 공지사항 -->
+        <div class="section-card fade-in">
+          <div class="section-title">
+            <div class="section-title-dot" style="background:var(--green);"></div>
+            공지사항
+          </div>
+          <div class="notice-item">
+            <div class="notice-icon">📌</div>
+            <div>
+              <div class="notice-title">nineware.ai.kr 대시보드 오픈<span class="notice-new">NEW</span></div>
+              <div class="notice-date">2026-04-16</div>
+            </div>
+          </div>
+          <div class="notice-item">
+            <div class="notice-icon">🤖</div>
+            <div>
+              <div class="notice-title">각자 Claude로 담당 대시보드 제작 시작</div>
+              <div class="notice-date">2026-04-16</div>
+            </div>
+          </div>
+          <div class="notice-item">
+            <div class="notice-icon">📋</div>
+            <div>
+              <div class="notice-title">완성 시 관리자에게 Vercel 주소 공유 요청</div>
+              <div class="notice-date">2026-04-16</div>
+            </div>
+          </div>
+          <div class="notice-item">
+            <div class="notice-icon">📅</div>
+            <div>
+              <div class="notice-title">월 1회 AI 활용 사례 공유 미팅 예정</div>
+              <div class="notice-date">2026-04-16</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    function updateClock() {
+      const now = new Date();
+      const date = now.toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric', weekday:'short' });
+      const time = now.toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit' });
+      document.getElementById('clock').innerHTML = date + '<br>' + time;
+      document.getElementById('today-date').textContent = date;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+</body>
+</html>
